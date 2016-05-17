@@ -13,7 +13,7 @@ $(function() {
 	var endInclinePos = 4860;
 
 	// posisi berhenti runner mendekati cauldron
-	var stopPosition = 5100;
+	var stopPosition = 5150;
 
 	// default runway
 	// 0 = bawah
@@ -29,22 +29,72 @@ $(function() {
 	// indikator jika sedang melompat
 	var isJump = false;
 
-	// atur posisi scroll ke default
-	window.scrollTo(0, 0);
+	// indikator jika telah finish
+	var isFinished = false;
 
-	// gambar awal runner
-	//$('#runner img').attr('src', '../runner/running2_Flamme.png');
+	// obstacles database
+	//var obstacleDatabase = [[], []]; // FIXME
 
-	// hilangkan default runner image
-	$('#runner img').remove();
-
-	// ubah status awal runner ke ready
-	$('#runner').attr('class', 'runner-ready');
+	// sementara menggunakan 3 obstacles aja :(
+	var obstacleDatabase = [];
 
 	// ============================================================ //
 	function scrollPage(val) {
 		if(runnerPos > 100)
 			window.scrollBy(val, 0);
+	}
+
+	function generateObstaclePos() {
+		obstacleDatabase[2] = Math.floor(Math.random() * (startInclinePos - 1000 + 1) + 0); // atas
+		obstacleDatabase[1] = Math.floor(Math.random() * (startInclinePos - 1000 + 1) + 0); // tengah
+		obstacleDatabase[0] = Math.floor(Math.random() * (startInclinePos - 1000 + 1) + 0); // bawah
+
+		console.dir(obstacleDatabase);
+	}
+
+	function buildObstacles() {
+
+		el = $('<span/>').attr('class', 'obstacle').css('margin-left', obstacleDatabase[2]+'px').css('left', '0');
+		$('#runway1').append(el);
+
+		el = $('<span/>').attr('class', 'obstacle').css('margin-left', obstacleDatabase[1]+'px').css('left', '0');
+		$('#runway2').append(el);
+
+		el = $('<span/>').attr('class', 'obstacle').css('margin-left', obstacleDatabase[0]+'px').css('left', '0');
+		$('#runway3').append(el);
+
+	}
+
+	// fungsi untuk memeriksa apakah posisi runner berada di area tabrakan
+	function isObstacleCollided(curRunnerPos, curRunwayPos) {
+		
+		// ambil posisi obstacle di mana runner sedang berada
+		var obsInRunway = obstacleDatabase[curRunwayPos];
+
+		// buat posisi aman sebelum obstacle
+		var safePosBefore = obsInRunway - 10;
+
+		// buat posisi aman setelah obstacle
+		var safePosAfter = obsInRunway + 10;
+
+		// cek apakah posisi runner sedang berada di range posisi tidak aman dan tidak lompat
+		if(curRunnerPos >= safePosBefore && curRunnerPos <= safePosAfter && !isJump) {
+			return true;
+		}
+
+		return false;
+	}
+	
+	function showFinishPopup() {
+		$('#end > .box > .error').hide();
+		$('#end > .box > .success').show();
+		$('#end').show();
+	}
+
+	function showGameOverPopup() {
+		$('#end > .box > .error').show();
+		$('#end > .box > .success').hide();
+		$('#end').show();
 	}
 
 	function moveRunner(val) {
@@ -55,6 +105,24 @@ $(function() {
 		$('#runner').css('left', runnerPos);
 
 		//console.log(runnerPos);
+
+		// cek apakah terjadi tabrakan?
+		if(isObstacleCollided(runnerPos, runwayPos)) {
+			
+			// stop timer untuk scrolling
+			clearInterval(timerScroll);
+
+			// stop timer untuk perpindahan runner
+			clearInterval(timerMoveRunner);
+
+			// ubah status runner ke default (ready) untuk menghentikan animasi
+			$('#runner').attr('class', 'runner-ready');
+
+			// tampilkan popup GAME OVER
+			showGameOverPopup();
+
+			return;
+		}
 
 		// jika berada pada range tanjakan
 		if(runnerPos > startInclinePos && runnerPos < endInclinePos) {
@@ -71,7 +139,10 @@ $(function() {
 			$('#runner').css('bottom', kenaikan + 'px');
 		}
 
+		// FINISH!
 		if(runnerPos > stopPosition) {
+			isFinished = true;
+
 			// stop timer untuk scrolling
 			clearInterval(timerScroll);
 
@@ -80,6 +151,8 @@ $(function() {
 
 			// ubah status runner menjadi ready
 			$('#runner').attr('class', 'runner-ready');
+
+			showFinishPopup();
 		}
 	}
 
@@ -119,8 +192,9 @@ $(function() {
 	// TODO: chrome jump
 	function jumpRunner() {
 
-		// jika tidak sedang lompat, untuk menghindari stacked jump
-		if(!isJump) {
+		// jika tidak sedang lompat dan belum finish
+		// untuk menghindari stacked jump
+		if(!isJump && !isFinished) {
 
 			// ubah status tidak lompat menjadi lompat
 			isJump = true;
@@ -131,7 +205,7 @@ $(function() {
 			// animasikan runner ke posisi naik
 			$('#runner').animate(
 				{ 
-					top: "-=50px"
+					top: "-=50px" // sekian pixel akan naik dari posisi semula
 				}, 
 				200, // durasi
 				'linear', // lompat normal
@@ -140,7 +214,7 @@ $(function() {
 					// animasikan runner ke posisi turun
 					$('#runner').animate(
 						{ 
-							top: "+=50px"
+							top: "+=50px" // sekian pixel akan turun dari posisi saat di puncak
 						}, 
 						200, // durasi
 						'linear', // lompat normal
@@ -163,6 +237,27 @@ $(function() {
 	}
 
 	// ============================================================ //
+	// Perintah-perintah yang akan dipanggil pertama kali adalah 
+	// fungsi-fungsi yang berada di bawah ini:
+	// ============================================================ //
+
+	// atur posisi scroll ke default
+	window.scrollTo(0, 0);
+
+	// hilangkan default runner image
+	$('#runner img').remove();
+
+	// ubah status awal runner ke ready
+	$('#runner').attr('class', 'runner-ready');
+
+	// hapus semua obstacles default
+	$('span.obstacle').remove();
+	
+	// generate posisi obstacles secara random
+	generateObstaclePos();
+
+	// letakkan obstacles berdasarkan posisi yang ditentukan di atas (random)
+	buildObstacles();
 
 	// fungsi ketika tombol Start ditekan
 	$('#startButton').on('click', function() {
