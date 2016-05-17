@@ -42,7 +42,7 @@
 				<p>You can visit again pressing the Restart Button!</p>
 			</div>
 			<form action="#" method="post" >
-				<button type="submit" class='btn btn-start' id="restartButton" onclick="end.remove(); return false;">RESTART</button>
+				<button type="submit" class='btn btn-start' id="restartButton" onclick="reloaded(); return false;">RESTART</button>
 			</form>
 		</div>
 	</div><!-- END END -->
@@ -138,3 +138,9 @@
 
 </body>
 </html>
+
+<script>
+	function reloaded() {
+    	location.reload();
+	}
+</script>
