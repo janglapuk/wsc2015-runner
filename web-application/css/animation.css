@@ -1,0 +1,66 @@
+/* ==================================== */
+/* Keyframe untuk 'run' */
+
+@-webkit-keyframes run {
+   from { background-position:    0px; }
+     to { background-position: -800px; }
+}
+
+@-moz-keyframes run {
+   from { background-position:    0px; }
+     to { background-position: -800px; }
+}
+
+@-ms-keyframes run {
+   from { background-position:    0px; }
+     to { background-position: -800px; }
+}
+
+@-o-keyframes run {
+   from { background-position:    0px; }
+     to { background-position: -800px; }
+}
+
+@keyframes run {
+   from { background-position:    0px; }
+     to { background-position: -800px; }
+}
+
+/* ==================================== */
+
+/* Versi IMG */
+/*
+#runner img {
+  object-fit: none;
+  object-position: -700px 0;
+  width: 100px;
+  height: 100px;
+  z-index: 999;
+}
+*/
+
+.runner-ready {
+  width: 100px;
+  height: 104px;
+
+  /* -300px adalah posisi kaki runner stand-by */
+  background: url('../../runner/running2_Flamme.png') -300px 0;
+}
+
+.runner-animate-run {
+  width: 100px;
+  height: 104px;
+
+  background: url('../../runner/running2_Flamme.png') 0 0;
+
+  -webkit-animation: run 1s steps(8) infinite;
+     -moz-animation: run 1s steps(8) infinite;
+}
+
+.runner-jump {
+  width: 100px;
+  height: 104px;
+
+  /* 0 adalah posisi kaki runner terbuka (lompat) */
+  background: url('../../runner/running2_Flamme.png') 0 0;
+}
