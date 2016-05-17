@@ -8,11 +8,12 @@ $(function() {
 
 	// posisi akan mendaki
 	var startInclinePos = 4650;
+
+	// posisi akhir pendakian
 	var endInclinePos = 4860;
 
-
-	// urutan sprite runner
-	//runnerFrame = 0;
+	// posisi berhenti runner mendekati cauldron
+	var stopPosition = 5100;
 
 	// default runway
 	// 0 = bawah
@@ -34,7 +35,10 @@ $(function() {
 	// gambar awal runner
 	//$('#runner img').attr('src', '../runner/running2_Flamme.png');
 
+	// hilangkan default runner image
 	$('#runner img').remove();
+
+	// ubah status awal runner ke ready
 	$('#runner').attr('class', 'runner-ready');
 
 	// ============================================================ //
@@ -44,51 +48,40 @@ $(function() {
 	}
 
 	function moveRunner(val) {
+		// penambahan posisi runner
 		runnerPos += val;
 
+		// atur posisi runner dengan mengatur attribut 'left' pada CSS
 		$('#runner').css('left', runnerPos);
 
-		console.log(runnerPos);
+		//console.log(runnerPos);
 
-		// jika mendekati tanjakan
+		// jika berada pada range tanjakan
 		if(runnerPos > startInclinePos && runnerPos < endInclinePos) {
+
+			// ambil nilai bottom saat ini, parse dari string ke integer
 			var currentBottom = parseInt($('#runner').css('bottom'));
+
+			// penambahan berdasarkan kenaikan nilai runnerPos
 			var penambah = (runnerPos - startInclinePos) / 30;
+
 			var kenaikan = currentBottom + penambah;
 
+			// atur attribute 'bottom' untuk mendaki
 			$('#runner').css('bottom', kenaikan + 'px');
 		}
 
-		if(runnerPos > 5100) {
+		if(runnerPos > stopPosition) {
+			// stop timer untuk scrolling
 			clearInterval(timerScroll);
+
+			// stop timer untuk perpindahan runner
 			clearInterval(timerMoveRunner);
+
+			// ubah status runner menjadi ready
 			$('#runner').attr('class', 'runner-ready');
 		}
 	}
-
-	/*
-	function animateRunner(isJump) {
-		if(runnerFrame <= 4)
-			runnerFrame -= 1;
-		
-		else if(runnerFrame == 1)
-			runnerFrame += 1;
-
-		$('#runner img').attr('src', '../runner/runner_' + runnerFrame + '.png');		
-	}
-	
-	// Versi IMG
-	function animateRunner() {
-		$('#runner img').css('object-position', '-' + (runnerFrame * 100) + 'px 0');
-
-		if(runnerFrame == 7)
-			runnerFrame = 0;
-
-		runnerFrame++;
-
-		console.log(runnerFrame);
-	}
-	*/
 
 	function changeRunway(keyCode) {
 
@@ -108,6 +101,7 @@ $(function() {
 			else if(runwayPos > 2)
 				runwayPos = 2;
 
+			// kondisi pengaturan runway, diatur dengan CSS
 			switch(runwayPos) {
 				case 0:
 					$('#runner').css('bottom', '70px');	break;
@@ -125,35 +119,42 @@ $(function() {
 	// TODO: chrome jump
 	function jumpRunner() {
 
-		// jika tidak sedang lompat
-		// untuk menghindari stacked jump
+		// jika tidak sedang lompat, untuk menghindari stacked jump
 		if(!isJump) {
+
+			// ubah status tidak lompat menjadi lompat
 			isJump = true;
 
+			// sebelum lompat, ubah status runner pada posisi animasi lompat (kaki terbuka)
 			$('#runner').attr('class', 'runner-jump');
 
+			// animasikan runner ke posisi naik
 			$('#runner').animate(
 				{ 
-					top: "-=50px" 
+					top: "-=50px"
 				}, 
 				200, // durasi
 				'linear', // lompat normal
-				function() {
+				function() { // onComplete (fungsi ketika animasi #1 telah selesai)
+
+					// animasikan runner ke posisi turun
 					$('#runner').animate(
 						{ 
-							top: "+=50px" 
+							top: "+=50px"
 						}, 
-						200, 
-						'linear',
-						function() {
+						200, // durasi
+						'linear', // lompat normal
+						function() { // onComplete (fungsi ketika animasi #2 telah selesai)
 							// FIX: reset top
 							// jika tidak di-reset setelah jump
 							// runway tidak dapat diganti
 							$('#runner').css('top', ''); 
 
+							// ubah status runner dari lompat ke status lari
 							$('#runner').attr('class', 'runner-animate-run');
 
-							isJump = false; // tandai lompat telah selesai
+							// reset status lompat
+							isJump = false;
 						}
 					);
 				}
@@ -161,33 +162,22 @@ $(function() {
 		}
 	}
 
-
 	// ============================================================ //
+
+	// fungsi ketika tombol Start ditekan
 	$('#startButton').on('click', function() {
 		
-		// buat timer untuk scrollbar
+		// buat timer untuk perpindahan scrollbar
 		timerScroll = setInterval(function() {
-			scrollPage(5);
-		}, 10);
+			scrollPage(5); // parameter 5 => penambah nilai posisi
+		}, 10); // 10 ms
 
 		// buat timer untuk perpindahan posisi horizontal runner
 		timerMoveRunner = setInterval(function() {
-			moveRunner(5);
-		}, 10);
+			moveRunner(5); // parameter 5 => penambah nilai posisi
+		}, 10); // 10 ms
 
-		// buat timer untuk pergantian animasi runner
-		/*
-		setInterval(function() {
-			animateRunner();
-		}, 150);
-		*/
-
-		// atur class untuk menganimasikan 
-		
-		// versi IMG
-		//$('#runner img').attr('class', 'runner-animate-run');
-
-		// versi DIV
+		// ubah status runner ke animasi berlari
 		$('#runner').attr('class', 'runner-animate-run');
 
 	});
