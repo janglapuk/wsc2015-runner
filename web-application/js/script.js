@@ -49,7 +49,7 @@ $(function() {
 		obstacleDatabase[1] = Math.floor(Math.random() * (startInclinePos - 1000 + 1) + 0); // tengah
 		obstacleDatabase[0] = Math.floor(Math.random() * (startInclinePos - 1000 + 1) + 0); // bawah
 
-		console.dir(obstacleDatabase);
+		//console.dir(obstacleDatabase);
 	}
 
 	function buildObstacles() {
@@ -97,6 +97,32 @@ $(function() {
 		$('#end').show();
 	}
 
+	function finished() {
+		isFinished = true;
+
+		// ubah status gambar pyre normal ke pyre terbakar
+		$('#pyre img').attr('src', 'imgs/pyre_fire.svg');
+
+		// hentikan permainan
+		stopGame();
+
+		// tampilkan popup GAME OVER
+		//showFinishPopup(); // no delay
+
+		// adanya setTimeout 1000ms supaya ada jeda agar api di couldron kelihatan ada perubahan
+		setTimeout(showFinishPopup, 1000);
+	}
+
+	function gameOver() {
+		isFinished = false;
+
+		// hentikan permainan
+		stopGame();
+
+		// tampilkan popup GAME OVER
+		showGameOverPopup();
+	}
+
 	function moveRunner(val) {
 		// penambahan posisi runner
 		runnerPos += val;
@@ -108,13 +134,7 @@ $(function() {
 
 		// cek apakah terjadi tabrakan?
 		if(isObstacleCollided(runnerPos, runwayPos)) {
-			
-			// hentikan permainan
-			stopGame();
-
-			// tampilkan popup GAME OVER
-			showGameOverPopup();
-
+			gameOver();
 			return;
 		}
 
@@ -135,14 +155,13 @@ $(function() {
 
 		// FINISH!
 		if(runnerPos > stopPosition) {
-			isFinished = true;
-
-			// hentikan permainan
-			stopGame();
-
-			// tampilkan popup GAME OVER
-			showFinishPopup();
+			finished();
+			return;
 		}
+	}
+
+	function resetRunway() {
+		$('#runner').css('bottom', '100px');
 	}
 
 	function changeRunway(keyCode) {
@@ -239,6 +258,9 @@ $(function() {
 		// hilangkan default runner image
 		$('#runner img').remove();
 
+		// reset posisi runner di runway menjadi posisi default
+		resetRunway();
+
 		// ubah status awal runner ke ready
 		$('#runner').attr('class', 'runner-ready');
 
@@ -250,6 +272,10 @@ $(function() {
 
 		// letakkan obstacles berdasarkan posisi yang ditentukan di atas (random)
 		buildObstacles();
+
+		// FIX: ubah status pyre terbakar ke normal
+		// berpengaruh ketika restart setelah finish
+		$('#pyre img').attr('src', 'imgs/pyre.svg');
 	}
 
 	// fungsi untuk memulai permainan
@@ -316,7 +342,7 @@ $(function() {
 				break;
 
 			case KEYBOARD_DOWN:
-				changeRunway(KEYBOARD_DOWN);			
+				changeRunway(KEYBOARD_DOWN);
 				event.preventDefault();
 				break;
 		}
