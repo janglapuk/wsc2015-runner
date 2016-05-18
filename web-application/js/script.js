@@ -109,14 +109,8 @@ $(function() {
 		// cek apakah terjadi tabrakan?
 		if(isObstacleCollided(runnerPos, runwayPos)) {
 			
-			// stop timer untuk scrolling
-			clearInterval(timerScroll);
-
-			// stop timer untuk perpindahan runner
-			clearInterval(timerMoveRunner);
-
-			// ubah status runner ke default (ready) untuk menghentikan animasi
-			$('#runner').attr('class', 'runner-ready');
+			// hentikan permainan
+			stopGame();
 
 			// tampilkan popup GAME OVER
 			showGameOverPopup();
@@ -143,15 +137,10 @@ $(function() {
 		if(runnerPos > stopPosition) {
 			isFinished = true;
 
-			// stop timer untuk scrolling
-			clearInterval(timerScroll);
+			// hentikan permainan
+			stopGame();
 
-			// stop timer untuk perpindahan runner
-			clearInterval(timerMoveRunner);
-
-			// ubah status runner menjadi ready
-			$('#runner').attr('class', 'runner-ready');
-
+			// tampilkan popup GAME OVER
 			showFinishPopup();
 		}
 	}
@@ -236,32 +225,35 @@ $(function() {
 		}
 	}
 
-	// ============================================================ //
-	// Perintah-perintah yang akan dipanggil pertama kali adalah 
-	// fungsi-fungsi yang berada di bawah ini:
-	// ============================================================ //
+	// Fungsi untuk start/restart
+	function prepareGame() {
+		// reset posisi runner
+		runnerPos = 0;
 
-	// atur posisi scroll ke default
-	window.scrollTo(0, 0);
+		// reset posisi runway
+		runwayPos = 1;
 
-	// hilangkan default runner image
-	$('#runner img').remove();
+		// atur posisi scroll ke default
+		window.scrollTo(0, 0);
 
-	// ubah status awal runner ke ready
-	$('#runner').attr('class', 'runner-ready');
+		// hilangkan default runner image
+		$('#runner img').remove();
 
-	// hapus semua obstacles default
-	$('span.obstacle').remove();
-	
-	// generate posisi obstacles secara random
-	generateObstaclePos();
+		// ubah status awal runner ke ready
+		$('#runner').attr('class', 'runner-ready');
 
-	// letakkan obstacles berdasarkan posisi yang ditentukan di atas (random)
-	buildObstacles();
+		// hapus semua obstacles
+		$('span.obstacle').remove();
 
-	// fungsi ketika tombol Start ditekan
-	$('#startButton').on('click', function() {
-		
+		// generate posisi obstacles secara random
+		generateObstaclePos();
+
+		// letakkan obstacles berdasarkan posisi yang ditentukan di atas (random)
+		buildObstacles();
+	}
+
+	// fungsi untuk memulai permainan
+	function startGame() {
 		// buat timer untuk perpindahan scrollbar
 		timerScroll = setInterval(function() {
 			scrollPage(5); // parameter 5 => penambah nilai posisi
@@ -274,7 +266,40 @@ $(function() {
 
 		// ubah status runner ke animasi berlari
 		$('#runner').attr('class', 'runner-animate-run');
+	}
 
+	function stopGame() {
+
+		// stop timer untuk scrolling
+		clearInterval(timerScroll);
+
+		// stop timer untuk perpindahan runner
+		clearInterval(timerMoveRunner);
+
+		// ubah status runner menjadi ready
+		$('#runner').attr('class', 'runner-ready');
+	}
+
+	// ============================================================ //
+	// Perintah-perintah yang akan dipanggil pertama kali adalah 
+	// fungsi-fungsi yang berada di bawah ini:
+	// ============================================================ //
+
+	// persiapan semua kondisi ke default untuk pertama kali
+	prepareGame();
+
+	// fungsi ketika tombol Start ditekan
+	$('#startButton').on('click', function() {
+		startGame();
+	});
+
+	// fungsi click ketika tombol Restart ditekan
+	$('#restartButton').on('click', function() {
+		// persiapan semua kondisi ke default
+		prepareGame();
+
+		// setelah persiapan, mulai permainan
+		startGame();
 	});
 
 	// atur binding keydown untuk pendeteksian key yang diperlukan
