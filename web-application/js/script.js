@@ -15,6 +15,34 @@ $(function() {
 	// posisi berhenti runner mendekati cauldron
 	var stopPosition = 5150;
 
+	// landmark panels
+	var landmarkNames = [
+		'amazon', // Amazon Rainforest – Manaus – AM
+		'bahia', // Lacerda Elevator – Salvador – BA
+		'parana', // Iguaçu Falls – Foz do Iguaçu – PR
+		'saopaulo', // Cable-Stayed Bridge – São Paulo – SP
+		'rio'  // Christ the Redeemer – Rio de Janeiro – RJ
+	];
+
+	// database untuk menampung nama-nama landmark pada panel
+	// jadi tidak perlu menulis manual nama-namanya, cukup ambil dari text HTML-nya saja
+	var landmarkPanelNames = ['', '', '', '', ''];
+
+	// indikator landmark yang telah dilewati
+	// ini digunakan untuk menentukan element berdasarkan index-nya
+	// nilai indikator incremented hingga total jumlah landmark
+	var landmarkPassed = 0;
+
+	// efek animasi pada masing-masing landmark saat muncul
+	// PENTING: lihat deskripsi project nomor 9
+	var landmarkShowEffects = [
+		'slide',
+		'drop',
+		'pulsate',
+		'clip',
+		'shake'
+	];
+
 	// default runway
 	// 0 = bawah
 	// 1 = tengah
@@ -66,6 +94,7 @@ $(function() {
 	}
 
 	// fungsi untuk memeriksa apakah posisi runner berada di area tabrakan
+	// PENTING: lihat deskripsi project nomor 6
 	function isObstacleCollided(curRunnerPos, curRunwayPos) {
 		
 		// ambil posisi obstacle di mana runner sedang berada
@@ -83,6 +112,42 @@ $(function() {
 		}
 
 		return false;
+	}
+
+	function landmarkPassingCheck(curRunnerPos) {
+		// karena landmark awal dimulai dari posisi 800
+		var landmarkPos = 800 + (landmarkPassed * 800);
+
+		// landmark  
+		var nextLandmarkPos = landmarkPos + 800;
+
+		//console.log('landmarkPos: ' + landmarkPos + ' / nextLandmarkPos: ' + nextLandmarkPos);
+		// lakukan sejumlah total landmark saja
+		if(landmarkPassed < landmarkNames.length) {
+
+			// jika posisi runner berada pada range mendekati landmark tujuan dan landmark berikutnya
+			if(curRunnerPos >= landmarkPos && curRunnerPos < nextLandmarkPos) {
+
+				// tampung element panel berdasarkan index
+				var panel = $('#panels > .panel').get(landmarkPassed);
+
+				// atur panel text
+				// PENTING: lihat deskripsi project nomor 8
+				$(panel).text(landmarkPanelNames[landmarkPassed]);
+
+				// tampilkan gambar landmark yang disembuyikan
+				//$('#' + landmarkNames[landmarkPassed] + ' > img').show();
+
+				// animasikan masing-masing landmark yang dilewati
+				// PENTING: lihat deskripsi project nomor 9
+				var animateType = landmarkShowEffects[landmarkPassed];
+				$('#' + landmarkNames[landmarkPassed] + ' > img').show(animateType, {direction: "up"}, 500);
+
+				//console.log('Passed: ' + landmarkPassed);
+
+				landmarkPassed++;
+			}			
+		}
 	}
 	
 	function showFinishPopup() {
@@ -110,6 +175,7 @@ $(function() {
 		//showFinishPopup(); // no delay
 
 		// adanya setTimeout 1000ms supaya ada jeda agar api di couldron kelihatan ada perubahan
+		// PENTING: lihat deskripsi project nomor 11
 		setTimeout(showFinishPopup, 1000);
 	}
 
@@ -131,14 +197,17 @@ $(function() {
 		$('#runner').css('left', runnerPos);
 
 		//console.log(runnerPos);
+		landmarkPassingCheck(runnerPos);
 
 		// cek apakah terjadi tabrakan?
+		// PENTING: lihat deskripsi project nomor 6
 		if(isObstacleCollided(runnerPos, runwayPos)) {
 			gameOver();
 			return;
 		}
 
 		// jika berada pada range tanjakan
+		// PENTING: lihat deskripsi project nomor 11
 		if(runnerPos > startInclinePos && runnerPos < endInclinePos) {
 
 			// ambil nilai bottom saat ini, parse dari string ke integer
@@ -154,6 +223,7 @@ $(function() {
 		}
 
 		// FINISH!
+		// PENTING: lihat deskripsi project nomor 11
 		if(runnerPos > stopPosition) {
 			finished();
 			return;
@@ -161,7 +231,43 @@ $(function() {
 	}
 
 	function resetRunway() {
-		$('#runner').css('bottom', '100px');
+		$('#runner').css('bottom', '90px');
+		$('#runner').css('transform', 'scale(0.9, 0.9)');
+	}
+
+	// fungsi untuk mengatur perspektif runner
+	// ketika di runway atas, ukuran runner mengecil
+	// ketika di runway tengah, ukuran runner normal
+	// ketika di runway bawah, ukuran runner membesar
+	// PENTING: lihat deskripsi project nomor 3.4
+	function rescaleRunnerPerspective(curRunwayPos) {
+		
+		//var leftDistance = parseInt($('#runner').css('left'));
+
+		switch(curRunwayPos) {
+			case 0: // bawah
+				//$('#runner').css('left', (leftDistance + 100) + 'px');
+				$('#runner').css('bottom', '65px');	
+				$('#runner').css('transform', 'scale(1.0, 1.0)');
+				$('#runner').css('-webkit-transform', 'scale(1.0, 1.0)');
+				$('#runner').css('-moz-transform', 'scale(1.0, 1.0)');
+				break;
+
+			case 1: // tengah
+				$('#runner').css('bottom', '90px'); 
+				$('#runner').css('transform', 'scale(0.9, 0.9)');
+				$('#runner').css('-webkit-transform', 'scale(0.9, 0.9)');
+				$('#runner').css('-moz-transform', 'scale(0.9, 0.9)');
+				break;
+
+			case 2: // atas
+				//$('#runner').css('left', (leftDistance - 100) + 'px');
+				$('#runner').css('bottom', '110px'); 
+				$('#runner').css('transform', 'scale(0.8, 0.8)');
+				$('#runner').css('-webkit-transform', 'scale(0.8, 0.8)');
+				$('#runner').css('-moz-transform', 'scale(0.8, 0.8)');
+				break;
+		}
 	}
 
 	function changeRunway(keyCode) {
@@ -169,6 +275,7 @@ $(function() {
 		// hanya jika tidak sedang melompat
 		if(!isJump) {
 
+			// PENTING: lihat deskripsi project nomor 3.2
 			if(keyCode == KEYBOARD_UP)
 				runwayPos++;
 			else if(keyCode == KEYBOARD_DOWN)
@@ -177,22 +284,15 @@ $(function() {
 			// hanya ijinkan runwayPos memiliki nilai 0 hingga 2 saja
 			// jika kurang dari 0, paksa menjadi 0
 			// jika lebih dari 2, paksa menjadi 2
+			// PENTING: lihat deskripsi project nomor 3.3
 			if(runwayPos < 0)
 				runwayPos = 0;
 			else if(runwayPos > 2)
 				runwayPos = 2;
 
-			// kondisi pengaturan runway, diatur dengan CSS
-			switch(runwayPos) {
-				case 0:
-					$('#runner').css('bottom', '70px');	break;
-
-				case 1:
-					$('#runner').css('bottom', '100px'); break;
-
-				case 2:
-					$('#runner').css('bottom', '120px'); break;
-			}
+			// ubah perspektif runner sesuai runway-nya
+			// PENTING: lihat deskripsi project nomor 3.4
+			rescaleRunnerPerspective(runwayPos);
 		}
 		
 	}
@@ -201,13 +301,15 @@ $(function() {
 	function jumpRunner() {
 
 		// jika tidak sedang lompat dan belum finish
-		// untuk menghindari stacked jump
+		// untuk menghindari stacked jump / jump while in the air
+		// PENTING: lihat deskripsi project nomor 4
 		if(!isJump && !isFinished) {
 
 			// ubah status tidak lompat menjadi lompat
 			isJump = true;
 
 			// sebelum lompat, ubah status runner pada posisi animasi lompat (kaki terbuka)
+			// PENTING: lihat deskripsi project nomor 4
 			$('#runner').attr('class', 'runner-jump');
 
 			// animasikan runner ke posisi naik
@@ -264,18 +366,42 @@ $(function() {
 		// ubah status awal runner ke ready
 		$('#runner').attr('class', 'runner-ready');
 
-		// hapus semua obstacles
+		// hapus semua obstacles yang ada
 		$('span.obstacle').remove();
 
 		// generate posisi obstacles secara random
+		// PENTING: lihat deskripsi project nomor 5
 		generateObstaclePos();
 
 		// letakkan obstacles berdasarkan posisi yang ditentukan di atas (random)
+		// PENTING: lihat deskripsi project nomor 5
 		buildObstacles();
 
 		// FIX: ubah status pyre terbakar ke normal
 		// berpengaruh ketika restart setelah finish
 		$('#pyre img').attr('src', 'imgs/pyre.svg');
+
+		// simpan nama panel masing-masing landmark ke database
+		$('#panels > .panel').each(function(idx, el) {
+			
+			// simpan nama landmark ke database jika sedang kosong saja
+			// FIXED: ini terjadi ketika restart
+			if(landmarkPanelNames[idx].length == 0) {
+				// simpan ke database
+				landmarkPanelNames[idx] = $(el).text();	
+			}
+						
+			// hapus text dari panel
+			// PENTING: lihat deskripsi project nomor 8 dan 9
+			$(el).text('');
+		});
+
+		// sembunyikan gambar landmark pada index greater than 0 (karena ada 6 elements)
+		// PENTING: lihat deskripsi project nomor 8 dan 9
+		$('#points > section :gt(0)').hide();
+
+		// reset indikator landmark yang telah dilewati
+		landmarkPassed = 0;
 	}
 
 	// fungsi untuk memulai permainan
@@ -286,6 +412,7 @@ $(function() {
 		}, 10); // 10 ms
 
 		// buat timer untuk perpindahan posisi horizontal runner
+		// PENTING: lihat deskripsi project nomor 7
 		timerMoveRunner = setInterval(function() {
 			moveRunner(5); // parameter 5 => penambah nilai posisi
 		}, 10); // 10 ms
