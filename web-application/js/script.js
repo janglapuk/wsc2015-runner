@@ -297,7 +297,7 @@ $(function() {
 		
 	}
 
-	// TODO: chrome jump
+	// FIXED: chrome jump
 	function jumpRunner() {
 
 		// jika tidak sedang lompat dan belum finish
@@ -315,7 +315,7 @@ $(function() {
 			// animasikan runner ke posisi naik
 			$('#runner').animate(
 				{ 
-					top: "-=50px" // sekian pixel akan naik dari posisi semula
+					bottom: "+=50px" // sekian pixel akan naik dari posisi semula
 				}, 
 				200, // durasi
 				'linear', // lompat normal
@@ -324,7 +324,7 @@ $(function() {
 					// animasikan runner ke posisi turun
 					$('#runner').animate(
 						{ 
-							top: "+=50px" // sekian pixel akan turun dari posisi saat di puncak
+							bottom: "-=50px" // sekian pixel akan turun dari posisi saat di puncak
 						}, 
 						200, // durasi
 						'linear', // lompat normal
